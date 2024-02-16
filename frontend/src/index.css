@@ -1,0 +1,108 @@
+body {
+  margin: 0;
+  background: #fbfada ;
+}
+
+
+.input{
+  background: #12372A;
+  margin: 30px;
+  margin-top: 50px;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.form{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+}
+.input-label{
+  color: white;
+  margin: 10px;
+  margin-left: 0;
+}
+
+.input-file{
+  margin: 10px;
+  margin-left: 0;
+  color: white;
+  padding: 8 8 8 0;
+}
+
+.btn{
+  width: 100px;
+  padding: 10px;
+  margin: 15px;
+  border-radius: 8px;
+  border: 1px solid white;
+}
+
+.input-div{
+  display: flex;
+  flex-direction: column;
+}
+
+.progress{
+  background: #436850;
+  margin: 30px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.progress-text{
+  padding: 10px;
+  margin: 20px;
+  color: white;
+}
+
+.output{
+  display: flex;
+  flex-direction: column;
+  background: #436850;
+  margin: 30px;
+  padding: 20px;
+  border-radius: 10px;
+  color: white;
+}
+
+.download{
+  text-decoration: none;
+  color: #fbfada;
+}
+
+.download:hover{
+  color: #12372A;
+}
+
+.download::after{
+  color: #12372A;
+}
+
+.eg{
+  color: white;
+}
+
+.tab{
+  display: inline-block;
+  margin-left: 30px;
+}
+
+.error{
+  background: #f44336;
+  margin: 30px;
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.error-text{
+  color: white;
+  margin-left: 8px;
+}
+
+.heading{
+  text-align: center;
+  color: #436850;
+  margin: 30px;
+}
