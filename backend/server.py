@@ -19,6 +19,7 @@ no_of_chunks=1
 def update_progress():
     global processed, no_of_chunks
     print(processed, no_of_chunks,)
+
     return round(processed/no_of_chunks * 100,1)
 
 @app.route('/progress')
@@ -39,27 +40,23 @@ def process(chunk, content, function_name):
     functions=importlib.import_module('assets.files.function')
     with open(output,'w',newline='') as outfile:
         writer=csv.writer(outfile)
+        func=None
+        try:
+            if (hasattr(functions,function_name)):
+                func=getattr(functions,function_name)
+            else:
+                raise ValueError(f"Function '{function_name}' not found")
+        except Exception as e: 
+            raise e
 
+        
         for row in chunk_data:
-            namespace={}
             try:
-                if (hasattr(functions,function_name)):
-                    func=getattr(functions,function_name)
-                    result=func(row)
-                else:
-                    raise ValueError(f"Function '{function_name}' not found")
+                result=func(row)
                 writer.writerow(result)
-                
-
             except Exception as e:
-                # response_data=json.dumps({"error": str(e)})
-                # response=make_response(response_data,400)
                 raise e
-                # return Response(response_data, status=400, mimetype='application/json')
-            # processed_data=[]
-            # #processing script
-            # for i in row:
-            #     processed_data.append(i.upper())
+                
             
     return output
 
@@ -74,9 +71,6 @@ def divide_csv(input_file, codeContent,function_name,size, divisions):
         current=[] #current chunk
         for i,row in enumerate(reader):
             current.append(row)
-            # print(row)
-            # print()
-            # print(i)
             if i!=0 and i%size==0:
                 chunks.append([index, current[:]])
                 index+=1
@@ -87,12 +81,6 @@ def divide_csv(input_file, codeContent,function_name,size, divisions):
         if current:
             chunks.append([index, current[:]])
 
-        # for i in chunks:
-        #     print(i)
-        #     print()
-
-        #using threading 
-
         '''with ThreadPoolExecutor(max_workers=divisions) as executor:
             results=executor.map(process,chunks)'''
        
@@ -102,21 +90,10 @@ def divide_csv(input_file, codeContent,function_name,size, divisions):
         global processed
         processed=0
 
-        #progress function
-        # def update_progress(res):
-        #     nonlocal processed
-        #     processed+=1
-        #     progress=processed/no_of_chunks*100
-        #     print('Progress: ', progress)
-
-        with Pool(processes=5) as p:
+        with Pool(processes=divisions) as p:
             results=[]
             for chunk in chunks:
-                # callback=update_progress
                 result=p.apply_async(process, (chunk,codeContent,function_name))
-                # result.get()
-                # processed+=1
-                # progress()
                 results.append(result)
             files=[]
             for result in results:
@@ -132,24 +109,12 @@ def divide_csv(input_file, codeContent,function_name,size, divisions):
 
                     # Get a list of all files in the current directory
                     files = os.listdir(current_directory)
-
-                    # Iterate over the files and delete those starting with "chunk"
                     for file in files:
                         if file.startswith('chunk'):
-                            # Construct the absolute file path
                             file_path = os.path.join(current_directory, file)
                             # Delete the file
                             os.remove(file_path)
                     raise e
-                
-            # for result in results:
-            #     result.wait()
-            
-        
-        # files=[]
-        # for res in results:
-        #     files.append(res.get())
-
         final_file='output.csv'
 
 
@@ -187,12 +152,13 @@ def validate(pyfile):
 
 @app.route("/processing",methods=['POST'])
 def processing():
+    global processed, no_of_chunks
+    processed=0
+    no_of_chunks=1
     inputfile=request.files['inputfile']
     pyfile=request.files['pyfile']
     funcName=request.form.get('funcName')
-    if not(inputfile) or not(pyfile) or not(funcName):
-        response_data=json.dumps({"error": "Please Enter all fields"})
-        return Response(response_data, status=405, mimetype='application/json')
+
     print(funcName)
     inputfile.save('./assets/files/input.csv')
     pyfile.save('./assets/files/function.py')
@@ -205,13 +171,16 @@ def processing():
         return Response(response_data, status=400, mimetype='application/json')
     else:
         try:
-            final=divide_csv('input.csv','function.py',funcName,1000,5,)
+            final=divide_csv('input.csv','function.py',funcName,2000,5)
+            return send_file(final, as_attachment=True)
         except Exception as e:
-
             print(str(e))
+            if ('NoneType' in str(e)):
+                response_data=json.dumps({"error": "Please check your python function. Make sure it returns an updated row."})
+                return Response(response_data,status=400)
             response_data=json.dumps({"error": str(e)})
             return Response(response_data,status=400)
-        return send_file(final, as_attachment=True)
+        
 
 
 if __name__=="__main__":

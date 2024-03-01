@@ -13,6 +13,7 @@ function App() {
   const submitHandler=async(e)=>{
     setError(null)
     e.preventDefault()
+    setOutputFile('')
     if (file){
       setProgress(0)
       setShowProgress(true)
@@ -21,14 +22,14 @@ function App() {
          n+=1
         axios.get('http://localhost:5000/progress')
         .then(response=>{
-          if (n<=2 && response.data.progress==100){
+          if (n<=2 && response.data.progress===100){
             setProgress(0)
           }
           else{
             setProgress(response.data.progress)
           }
           console.log(progress)
-          if (response.data.progress==100){
+          if (response.data.progress===100){
             setProgress(100)
             console.log(progress)
             axios.get('http:///localhost:5000/reset')
@@ -38,9 +39,6 @@ function App() {
             }).catch(err=>{
               console.log(err)
             })
-          }
-          if (progress==100){
-            clearInterval(interval)
           }
         })
         .catch(err=>{
@@ -53,11 +51,12 @@ function App() {
       
       const formData=new FormData();
       console.log(file, pyFile, functionName)
-      if (!(file) || !(pyFile) || functionName==''){
+      if (!(file) || !(pyFile) || functionName===''){
         setError('Please fill all fields')
         clearInterval(interval)
         setShowProgress(false)
         setOutputFile('')
+        return
       }
       else{
         formData.append('inputfile',file)
@@ -71,13 +70,6 @@ function App() {
         'Content-Type': 'multipart/form-data',
         }
       })
-      // if (response.status==400){
-      //   const error_obj=await response.data.text()
-      //   console.log(error_obj)
-      //   const err=JSON.parse(error_obj).error
-      //   console.log(err)
-      //   clearInterval(interval)
-      // }
       const url=window.URL.createObjectURL(new Blob([response.data]))
       setOutputFile(url)
       setShowProgress(false)
@@ -97,17 +89,24 @@ function App() {
       
       
     }
+    else{
+      setError('Please fill all fields')
+      setShowProgress(false)
+      setOutputFile('')
+    }
   }
   return (
     <div className="App">
       <h1 className="heading">CSV UTILITY</h1>
+      {/* form */}
       <div className="input">
+        
         <form className='form' onSubmit={submitHandler}>
           <div className="input-div"><label className="input-label">Input CSV File: </label>
-          <input className='input-file' accept=".csv" type='file' onChange={(e)=>setFile(e.target.files[0])}/>
+          <input className='input-file'   accept=".csv" type='file' onChange={(e)=>setFile(e.target.files[0])}/>
 
           <label className="input-label">Input Python File for data manipulation</label>
-          <input className='input-file' accept=".py" type='file' onChange={(e)=>setPyFile(e.target.files[0])}/>
+          <input className='input-file'  accept=".py" type='file' onChange={(e)=>setPyFile(e.target.files[0])}/>
           <label className="input-label">Specify the name of function to be called on each row of data: </label>
           <p className="eg">E.g: def manipulate(row):<br></br>
                 <span className='tab'/>processed=[] <br></br>
@@ -122,15 +121,24 @@ function App() {
           <button className='btn' type="submit">Process</button>
         </form>
       </div>
+
+        {/* progress bar */}
       {showProgress &&  (
+
         <div className="progress">
-          <p className="progress-text">Processing... {progress}</p>
+          {!progress && <p className="progress-text">Dividing csv file...</p>}
+          {progress!==0 && progress!==100 && <p className="progress-text">Processing... {progress}</p>}
+          {progress===100 && <p className="progress-text">Consolidating your output file...</p>}
         </div>
         )}
+
+        {/* output tab */}
         {outputFile && <div className="output">
           <p>Download Result: </p>
           <a className='download' href={outputFile} download='output.csv'>Result</a>
         </div>}
+
+        {/* error */}
         {error && <div className="error">
             <p className="error-text">Error: {error}</p>
           </div>}
