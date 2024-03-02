@@ -86,8 +86,6 @@ function App() {
       }
       }
 
-      
-      
     }
     else{
       setError('Please fill all fields')

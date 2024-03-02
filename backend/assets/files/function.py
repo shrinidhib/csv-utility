@@ -1,6 +1,6 @@
 def manipulate(row):
     processed=[]
-    for i in row:
+    for irow:
         processed.append(i.upper())
     return processed
 
