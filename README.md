@@ -16,11 +16,15 @@ Consolidated edited output csv file is provided to the user.
 To run use the following commands : 
 
 **for frontend**
+
 `cd frontend`
 
 `npm i`
+
 `npm run start`
 
 **for backend**
+
 `cd backend`
+
 `python3 server.py`
