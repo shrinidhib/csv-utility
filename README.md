@@ -17,6 +17,7 @@ To run use the following commands :
 
 **for frontend**
 `cd frontend`
+
 `npm i`
 `npm run start`
 
